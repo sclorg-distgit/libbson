@@ -1,0 +1,48 @@
+From 60a12902450044ed0bb227adb334326d861f0703 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Petr=20P=C3=ADsa=C5=99?= <ppisar@redhat.com>
+Date: Wed, 8 Feb 2017 18:02:12 +0100
+Subject: [PATCH] Fix signed integer wrap in time2sub()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+There is a signed integer wrap that has an undefined behevior and
+GCC 7 knows about it that the compiled code just crashes.
+
+Fix can be verified by building with -fsanitize=undefined option.
+
+<https://jira.mongodb.org/browse/CDRIVER-2010>
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/bson/bson-timegm.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/src/bson/bson-timegm.c b/src/bson/bson-timegm.c
+index c1e738b..1c6e99b 100644
+--- a/src/bson/bson-timegm.c
++++ b/src/bson/bson-timegm.c
+@@ -17,6 +17,7 @@
+ #include "errno.h"
+ #include "string.h"
+ #include "limits.h" /* for CHAR_BIT et al. */
++#include <stdint.h> /* for INT64_MAX and INT64_MIN */
+ 
+ /* Unlike <ctype.h>'s isdigit, this also works if c < 0 | c > UCHAR_MAX. */
+ #define is_digit(c) ((unsigned) (c) - '0' <= 9)
+@@ -625,10 +626,8 @@ time2sub (struct bson_tm *const tmp,
+    /*
+    ** Do a binary search.
+    */
+-   lo = 1;
+-   for (i = 0; i < (int64_t) TYPE_BIT (int64_t) - 1; ++i)
+-      lo *= 2;
+-   hi = -(lo + 1);
++   lo = INT64_MIN;
++   hi = INT64_MAX;
+ 
+    for (;;) {
+       t = lo / 2 + hi / 2;
+-- 
+2.7.4
+
