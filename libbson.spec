@@ -6,7 +6,7 @@
 
 Name:       %{?scl_prefix}libbson
 Version:    1.6.3
-Release:    2%{?dist}
+Release:    3%{?dist}
 Summary:    Building, parsing, and iterating BSON documents
 ## Installed:
 # COPYING:                              ASL 2.0
@@ -73,6 +73,9 @@ BuildRequires:  /opt/rh/%{pythonscl}/root/usr/bin/sphinx-build
 # <https://github.com/mnunberg/jsonsl/issues/14>.
 Provides:       bundled(jsonsl)
 
+# we don't want to require or provide any pkgconfig(xxx) symbols
+%global __pkgconfig_requires ""
+%global __pkgconfig_provides ""
 
 %description
 This is a library providing useful routines related to building, parsing,
@@ -173,6 +176,9 @@ make %{?_smp_mflags} check
 
 
 %changelog
+* Wed Jun 21 2017 Marek Skalický <mskalick@redhat.com> - 1.6.3-3
+- Remove pkgconfig() provides
+
 * Wed Jun 21 2017 Marek Skalický <mskalick@redhat.com> - 1.6.3-2
 - Rebase to libbson from Fedora 27 and convert it to SCL
 - use newer shinx from rh-python36
